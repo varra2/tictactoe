@@ -46,7 +46,7 @@ def player_choice(board, player_mark):
 
     while (row not in board) or (column not in [num for num in range(10)]):
         try:
-            position = input("Выберите свободную ячейку с A0 по E9: ")
+            position = input("Выберите свободную ячейку с A0 по J9: ")
             if len(position)!=2:
                 continue
             row = position[0].upper()
@@ -91,6 +91,7 @@ def loose_check(board, mark):
                     return True
             elif board[row][i] == board[rows[idx-1]][i-1] == board[rows[idx-2]][i-2] == board[rows[idx-3]][i-3] == board[rows[idx-4]][i-4] == mark:
                 return True
+    return False
 
 def full_board_check(board):
     # Условие ничьей (заполненность доски)
@@ -118,7 +119,7 @@ RIVAL = 'O' if PLAYER=='X' else 'X'
 while True:
 
     if PLAYERS_TURN:
-        print(f"Ваш ход, игрок {PLAYER}!")
+        print(f"Ваш ход!")
         EMPTY = False
         while not EMPTY:
             CELL = player_choice(PLAY_BOARD, PLAYER)

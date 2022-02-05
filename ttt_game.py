@@ -2,8 +2,9 @@ import random
 
 def generate_board():
     # Генерация значений для ячеек пустого поля
-    board = {'#': [str(num) for num in range(10)]}
-    for letter in 'JIHGFEDCBA':
+
+    board = {'#': [str(num) for num in range(1,11)]}
+    for letter in 'ABCDEFGHIJ':
         board[letter]= [' ' for num in range(10)]
     return board
 
@@ -29,7 +30,7 @@ def player_input():
 
     player = ""
     while player not in ('X', 'O'):
-        player = input('Вы хотите играть за X или O? ').upper()
+        player = input('Вы хотите играть за X или O?').upper()
 
     if player == 'X':
         players_turn = True
@@ -39,22 +40,23 @@ def player_input():
     return player, players_turn
 
 def player_choice(board, player_mark):
-    # Ход игрока
+    # Выбор ячейи в ход игрока
 
     row = 'K'
     column = -1
 
-    while (row not in board) or (column not in [num for num in range(10)]):
+    while (row not in board) or (column not in [num for num in range(1, 11)]):
         try:
-            position = input("Выберите свободную ячейку с A0 по J9: ")
-            if len(position)!=2:
+            position = input("Выберите свободную ячейку с A1 по J10: ")
+            if len(position)!=2 and position[1:]!='10':
                 continue
+            column = int(position[1:])
             row = position[0].upper()
-            column = int(position[1])
+
         except ValueError as exc:
             print(f'Неверное значение: {exc}. Пожалуйста, попробуйте снова.')
 
-    return row, column
+    return row, column-1
 
 def space_check(board, row, column):
     #Проверяем, свободна ли ячейка
@@ -79,19 +81,32 @@ def place_marker(board, marker, cell):
 def loose_check(board, mark):
     # Условие поражения
 
-    rows = 'ABCDEFGHIJ'[::-1]
+    winner = False
+    rows = 'ABCDEFGHIJ'
     for idx, row in enumerate(rows):
-        for i in range(6):
-            if board[row][i] == board[row][i+1] == board[row][i+2] == board[row][i+3] == board[row][i+4] == mark:
-                return True
-            elif idx<=5:
-                if board[row][i] == board[rows[idx+1]][i] == board[rows[idx+2]][i] == board[rows[idx+3]][i] == board[rows[idx+4]][i] == mark:
-                    return True
-                elif board[row][i] == board[rows[idx+1]][i+1] == board[rows[idx+2]][i+2] == board[rows[idx+3]][i+3] == board[rows[idx+4]][i+4] == mark:
-                    return True
-            elif board[row][i] == board[rows[idx-1]][i-1] == board[rows[idx-2]][i-2] == board[rows[idx-3]][i-3] == board[rows[idx-4]][i-4] == mark:
-                return True
-    return False
+        for i in range(10):
+            if i < 6:
+
+                #Проверка строк
+                if board[row][i] == board[row][i+1] == board[row][i+2] == board[row][i+3] == board[row][i+4] == mark:
+                    board[row][i] = board[row][i+1] = board[row][i+2] = board[row][i+3] = board[row][i+4] = 'Z'
+                    winner = mark         
+                
+                #Проверка главных диагоналей
+                elif idx<=5 and board[row][i] == board[rows[idx+1]][i+1] == board[rows[idx+2]][i+2] == board[rows[idx+3]][i+3] == board[rows[idx+4]][i+4] == mark:
+                    board[row][i] = board[rows[idx+1]][i+1] = board[rows[idx+2]][i+2] = board[rows[idx+3]][i+3] = board[rows[idx+4]][i+4] = 'Z'
+                    winner = mark   
+            
+                #Проверка побочных диагоналей
+                elif idx >=4 and board[row][i] == board[rows[idx-1]][i+1] == board[rows[idx-2]][i+2] == board[rows[idx-3]][i+3] == board[rows[idx-4]][i+4] == mark:
+                    board[row][i] = board[rows[idx-1]][i+1] = board[rows[idx-2]][i+2] = board[rows[idx-3]][i+3] = board[rows[idx-4]][i+4] = 'Z'
+                    winner = mark
+            #проверка cтолбцов
+            elif idx <= 5 and board[row][i] == board[rows[idx+1]][i] == board[rows[idx+2]][i] == board[rows[idx+3]][i] == board[rows[idx+4]][i] == mark:
+                board[row][i] = board[rows[idx+1]][i] = board[rows[idx+2]][i] = board[rows[idx+3]][i] = board[rows[idx+4]][i] = 'Z'
+                winner = mark
+            
+    return board, winner
 
 def full_board_check(board):
     # Условие ничьей (заполненность доски)
@@ -125,21 +140,21 @@ while True:
             CELL = player_choice(PLAY_BOARD, PLAYER)
             EMPTY = space_check(PLAY_BOARD, CELL[0], CELL[1])
         place_marker(PLAY_BOARD, PLAYER, CELL)
+        PLAY_BOARD, WINNER = loose_check(PLAY_BOARD, PLAYER)
     else:
         print("Ход противника: ")
         CELL = rival_choice(PLAY_BOARD)
         place_marker(PLAY_BOARD,RIVAL, CELL)
+        PLAY_BOARD, WINNER = loose_check(PLAY_BOARD, RIVAL)
 
     display_board(PLAY_BOARD)
     
     if full_board_check(PLAY_BOARD):
         print('Ничья!')
         break
-    elif loose_check(PLAY_BOARD, PLAYER):
-        print("Вы проиграли!")
-        break
-    elif loose_check(PLAY_BOARD, RIVAL):
-        print("Вы победили!")
+    if WINNER:
+        line = "Вы проиграли!" if WINNER == PLAYER else "Вы победили!"
+        print(line)
         break
 
     PLAYERS_TURN = switch()

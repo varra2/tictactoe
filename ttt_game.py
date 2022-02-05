@@ -1,5 +1,7 @@
 import random
 
+from torch import ge
+
 def generate_board():
     # Генерация значений для ячеек пустого поля
 
@@ -30,7 +32,7 @@ def player_input():
 
     player = ""
     while player not in ('X', 'O'):
-        player = input('Вы хотите играть за X или O?').upper()
+        player = input('Вы хотите играть за X или O? ').upper()
 
     if player == 'X':
         players_turn = True
@@ -121,42 +123,70 @@ def switch():
 
     return not players_turn
 
+def end(board, players_turn, player, rival):
+    # Проверка на соблюдение условий окончания игры
+
+    board, game_lost = loss_check(board, player) if players_turn else loss_check(board, rival)
+    if (not game_lost) and full_board_check(board):
+        return ' Ничья! '
+    elif game_lost:
+        line = ' Победа! :) ' if game_lost == rival else ' Проигрыш... :( '
+        return line
+    return False
+
+def start():
+    # Начало новой игры
+
+    board = generate_board()
+    player, players_turn = player_input()
+    rival = 'O' if player == 'X' else 'X'
+
+    return board, player, rival, players_turn
+
+def replay():
+    # Предложение перезапустить игру
+
+    decision = ""
+    while decision not in ('y', 'n', 'yes', 'no', 'д', 'н', 'да', 'нет'):
+        decision = input(
+            "Вы хотите продолжить игру? (y/n)"
+        ).lower()
+
+    return decision in ('y','yes', 'д', 'да')
+
 # Тело кода
 
 print('Добро пожаловать в игру "Крестики-нолики"!')
 
-play_board = generate_board()
-display_board(play_board)
-
-PLAYER, players_turn = player_input()
-RIVAL = 'O' if PLAYER=='X' else 'X'
+PLAY_BOARD, PLAYER, RIVAL, players_turn = start()
 
 while True:
+
+    display_board(PLAY_BOARD)
 
     if players_turn:
         print(f"Ваш ход!")
         cell_empty = False
         while not cell_empty:
-            CELL = player_choice(play_board, PLAYER)
-            cell_empty = space_check(play_board, CELL[0], CELL[1])
-        place_marker(play_board, PLAYER, CELL)
-        play_board, game_lost = loss_check(play_board, PLAYER)
+            CELL = player_choice(PLAY_BOARD, PLAYER)
+            cell_empty = space_check(PLAY_BOARD, CELL[0], CELL[1])
+        place_marker(PLAY_BOARD, PLAYER, CELL)
+        #PLAY_BOARD, game_lost = loss_check(PLAY_BOARD, PLAYER)
     else:
         print("Ход противника: ")
-        CELL = rival_choice(play_board)
-        place_marker(play_board,RIVAL, CELL)
-        play_board, game_lost = loss_check(play_board, RIVAL)
-
-    display_board(play_board)
+        CELL = rival_choice(PLAY_BOARD)
+        place_marker(PLAY_BOARD,RIVAL, CELL)
+        #PLAY_BOARD, game_lost = loss_check(PLAY_BOARD, RIVAL)
     
-    if full_board_check(play_board):
-        print('Ничья!')
-        break
-    if game_lost:
-        LINE = "Вы проиграли!" if game_lost == PLAYER else "Вы победили!"
-        print(LINE)
-        break
+    game_over = end(PLAY_BOARD, players_turn, PLAYER, RIVAL)
 
-    players_turn = switch()
+    if game_over:
+        display_board(PLAY_BOARD)
+        print(game_over)
+        if not replay():
+            break
+        PLAY_BOARD, PLAYER, RIVAL, players_turn = start()
+    else:
+        players_turn = switch()
     
 print("Игра окончена.")

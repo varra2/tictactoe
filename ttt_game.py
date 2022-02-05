@@ -78,10 +78,10 @@ def place_marker(board, marker, cell):
     row, column = cell
     board[row][column] = marker
 
-def loose_check(board, mark):
-    # Условие поражения
+def loss_check(board, mark):
+    # Проверка на выполнение условия поражения
 
-    winner = False
+    loser = False
     rows = 'ABCDEFGHIJ'
     for idx, row in enumerate(rows):
         for i in range(10):
@@ -90,23 +90,23 @@ def loose_check(board, mark):
                 #Проверка строк
                 if board[row][i] == board[row][i+1] == board[row][i+2] == board[row][i+3] == board[row][i+4] == mark:
                     board[row][i] = board[row][i+1] = board[row][i+2] = board[row][i+3] = board[row][i+4] = 'Z'
-                    winner = mark         
+                    loser = mark         
                 
                 #Проверка главных диагоналей
                 elif idx<=5 and board[row][i] == board[rows[idx+1]][i+1] == board[rows[idx+2]][i+2] == board[rows[idx+3]][i+3] == board[rows[idx+4]][i+4] == mark:
                     board[row][i] = board[rows[idx+1]][i+1] = board[rows[idx+2]][i+2] = board[rows[idx+3]][i+3] = board[rows[idx+4]][i+4] = 'Z'
-                    winner = mark   
+                    loser = mark   
             
                 #Проверка побочных диагоналей
                 elif idx >=4 and board[row][i] == board[rows[idx-1]][i+1] == board[rows[idx-2]][i+2] == board[rows[idx-3]][i+3] == board[rows[idx-4]][i+4] == mark:
                     board[row][i] = board[rows[idx-1]][i+1] = board[rows[idx-2]][i+2] = board[rows[idx-3]][i+3] = board[rows[idx-4]][i+4] = 'Z'
-                    winner = mark
-            #проверка cтолбцов
-            elif idx <= 5 and board[row][i] == board[rows[idx+1]][i] == board[rows[idx+2]][i] == board[rows[idx+3]][i] == board[rows[idx+4]][i] == mark:
+                    loser = mark
+            #Проверка cтолбцов
+            if idx <= 5 and board[row][i] == board[rows[idx+1]][i] == board[rows[idx+2]][i] == board[rows[idx+3]][i] == board[rows[idx+4]][i] == mark:
                 board[row][i] = board[rows[idx+1]][i] = board[rows[idx+2]][i] = board[rows[idx+3]][i] = board[rows[idx+4]][i] = 'Z'
-                winner = mark
+                loser = mark
             
-    return board, winner
+    return board, loser
 
 def full_board_check(board):
     # Условие ничьей (заполненность доски)
@@ -119,44 +119,44 @@ def full_board_check(board):
 def switch():
     # Смена хода
 
-    return not PLAYERS_TURN
+    return not players_turn
 
 # Тело кода
 
 print('Добро пожаловать в игру "Крестики-нолики"!')
 
-PLAY_BOARD = generate_board()
-display_board(PLAY_BOARD)
+play_board = generate_board()
+display_board(play_board)
 
-PLAYER, PLAYERS_TURN = player_input()
+PLAYER, players_turn = player_input()
 RIVAL = 'O' if PLAYER=='X' else 'X'
 
 while True:
 
-    if PLAYERS_TURN:
+    if players_turn:
         print(f"Ваш ход!")
-        EMPTY = False
-        while not EMPTY:
-            CELL = player_choice(PLAY_BOARD, PLAYER)
-            EMPTY = space_check(PLAY_BOARD, CELL[0], CELL[1])
-        place_marker(PLAY_BOARD, PLAYER, CELL)
-        PLAY_BOARD, WINNER = loose_check(PLAY_BOARD, PLAYER)
+        cell_empty = False
+        while not cell_empty:
+            CELL = player_choice(play_board, PLAYER)
+            cell_empty = space_check(play_board, CELL[0], CELL[1])
+        place_marker(play_board, PLAYER, CELL)
+        play_board, game_lost = loss_check(play_board, PLAYER)
     else:
         print("Ход противника: ")
-        CELL = rival_choice(PLAY_BOARD)
-        place_marker(PLAY_BOARD,RIVAL, CELL)
-        PLAY_BOARD, WINNER = loose_check(PLAY_BOARD, RIVAL)
+        CELL = rival_choice(play_board)
+        place_marker(play_board,RIVAL, CELL)
+        play_board, game_lost = loss_check(play_board, RIVAL)
 
-    display_board(PLAY_BOARD)
+    display_board(play_board)
     
-    if full_board_check(PLAY_BOARD):
+    if full_board_check(play_board):
         print('Ничья!')
         break
-    if WINNER:
-        line = "Вы проиграли!" if WINNER == PLAYER else "Вы победили!"
-        print(line)
+    if game_lost:
+        LINE = "Вы проиграли!" if game_lost == PLAYER else "Вы победили!"
+        print(LINE)
         break
 
-    PLAYERS_TURN = switch()
+    players_turn = switch()
     
 print("Игра окончена.")

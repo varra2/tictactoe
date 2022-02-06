@@ -1,14 +1,19 @@
+# coding=utf-8
+
 import random
 
-from torch import ge
-
 def generate_board():
-    # Генерация значений для ячеек пустого поля
+    # Генерация значений для ячеек пустого поля, а также множества пустых ячеек
 
     board = {'#': [str(num) for num in range(1,11)]}
+    free = set()
+
     for letter in 'ABCDEFGHIJ':
         board[letter]= [' ' for num in range(10)]
-    return board
+        for num in range(1, 11):
+            free.add(letter + str(num))
+
+    return board, free
 
 def display_board(board):
 # Отображение поля на экране
@@ -41,37 +46,34 @@ def player_input():
 
     return player, players_turn
 
-def player_choice(board, player_mark):
+def player_choice(free, player_mark):
     # Выбор ячейи в ход игрока
 
     row = 'K'
-    column = -1
+    column =0
 
-    while (row not in board) or (column not in [num for num in range(1, 11)]):
+    while row+str(column) not in free:
         try:
-            position = input("Выберите свободную ячейку с A1 по J10: ")
+            position = input("Выберите свободную ячейку с A1 по J10: ").upper()
             if len(position)!=2 and position[1:]!='10':
                 continue
             column = int(position[1:])
-            row = position[0].upper()
+            row = position[0]
 
         except ValueError as exc:
             print(f'Неверное значение: {exc}. Пожалуйста, попробуйте снова.')
 
+    free.remove(position)
+
     return row, column-1
 
-def space_check(board, row, column):
-    #Проверяем, свободна ли ячейка
-
-    return board[row][column] == ' '
-
-def rival_choice(board):
+def rival_choice(free):
     #Ход противника
 
-    while True:
-        row, column = random.choice([key for key in board if key != '#']), random.choice([num for num in range(10)])
-        if space_check(board, row, column):
-            break
+    position = random.choice(list(free))
+    free.remove(position)
+    row, column = position[0], int(position[1:])-1
+
     return row, column
 
 def place_marker(board, marker, cell):
@@ -110,24 +112,21 @@ def loss_check(board, mark):
             
     return board, loser
 
-def full_board_check(board):
+def full_board_check(free):
     # Условие ничьей (заполненность доски)
 
-    full = set()
-    for value in board.values():
-        full = full.union(set(value))
-    return ' ' not in full
+    return not len(free)
 
 def switch():
     # Смена хода
 
     return not players_turn
 
-def end(board, players_turn, player, rival):
+def end(board, free, players_turn, player, rival):
     # Проверка на соблюдение условий окончания игры
 
     board, game_lost = loss_check(board, player) if players_turn else loss_check(board, rival)
-    if (not game_lost) and full_board_check(board):
+    if (not game_lost) and full_board_check(free):
         return ' Ничья! '
     elif game_lost:
         line = ' Победа! :) ' if game_lost == rival else ' Проигрыш... :( '
@@ -137,11 +136,11 @@ def end(board, players_turn, player, rival):
 def start():
     # Начало новой игры
 
-    board = generate_board()
+    board, free_cells = generate_board()
     player, players_turn = player_input()
     rival = 'O' if player == 'X' else 'X'
 
-    return board, player, rival, players_turn
+    return board, free_cells, player, rival, players_turn
 
 def replay():
     # Предложение перезапустить игру
@@ -158,7 +157,7 @@ def replay():
 
 print('Добро пожаловать в игру "Крестики-нолики"!')
 
-PLAY_BOARD, PLAYER, RIVAL, players_turn = start()
+PLAY_BOARD, CELLS_AVAILABLE, PLAYER, RIVAL, players_turn = start()
 
 while True:
 
@@ -166,26 +165,21 @@ while True:
 
     if players_turn:
         print(f"Ваш ход!")
-        cell_empty = False
-        while not cell_empty:
-            CELL = player_choice(PLAY_BOARD, PLAYER)
-            cell_empty = space_check(PLAY_BOARD, CELL[0], CELL[1])
+        CELL = player_choice(CELLS_AVAILABLE, PLAYER)
         place_marker(PLAY_BOARD, PLAYER, CELL)
-        #PLAY_BOARD, game_lost = loss_check(PLAY_BOARD, PLAYER)
     else:
         print("Ход противника: ")
-        CELL = rival_choice(PLAY_BOARD)
+        CELL = rival_choice(CELLS_AVAILABLE)
         place_marker(PLAY_BOARD,RIVAL, CELL)
-        #PLAY_BOARD, game_lost = loss_check(PLAY_BOARD, RIVAL)
     
-    game_over = end(PLAY_BOARD, players_turn, PLAYER, RIVAL)
+    game_over = end(PLAY_BOARD, CELLS_AVAILABLE, players_turn, PLAYER, RIVAL)
 
     if game_over:
         display_board(PLAY_BOARD)
         print(game_over)
         if not replay():
             break
-        PLAY_BOARD, PLAYER, RIVAL, players_turn = start()
+        PLAY_BOARD, CELLS_AVAILABLE, PLAYER, RIVAL, players_turn = start()
     else:
         players_turn = switch()
     

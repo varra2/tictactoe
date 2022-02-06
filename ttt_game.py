@@ -1,5 +1,4 @@
 # coding=utf-8
-
 import random
 
 def generate_board():
@@ -112,11 +111,6 @@ def loss_check(board, mark):
             
     return board, loser
 
-def full_board_check(free):
-    # Условие ничьей (заполненность доски)
-
-    return not len(free)
-
 def switch():
     # Смена хода
 
@@ -126,11 +120,11 @@ def end(board, free, players_turn, player, rival):
     # Проверка на соблюдение условий окончания игры
 
     board, game_lost = loss_check(board, player) if players_turn else loss_check(board, rival)
-    if (not game_lost) and full_board_check(free):
+    if (not game_lost) and not len(free):
         return ' Ничья! '
     elif game_lost:
         line = ' Победа! :) ' if game_lost == rival else ' Проигрыш... :( '
-        return line
+        return lined
     return False
 
 def start():

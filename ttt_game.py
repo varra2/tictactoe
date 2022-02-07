@@ -1,5 +1,6 @@
 # coding=utf-8
 import random
+from display_board import display_board
 
 def generate_board():
     # Генерация значений для ячеек пустого поля, а также множества пустых ячеек
@@ -13,23 +14,6 @@ def generate_board():
             free.add(letter + str(num))
 
     return board, free
-
-def display_board(board):
-# Отображение поля на экране
-
-    def make_row(row):
-        print(row, end='')
-        for i in board[row]:
-            print(' | ' + i, end='')
-        print('')
-
-    sep = '- | '*10+'-'
-    
-    print()
-    for key in board:
-        make_row(key)
-        print(sep)
-    print()
 
 def player_input():
     #Выбор игровой роли (крестик или нолик)

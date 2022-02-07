@@ -1,5 +1,4 @@
 
-
 def display_board(board):
 # Отображение поля на экране
 

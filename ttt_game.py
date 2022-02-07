@@ -158,7 +158,7 @@ while True:
     display_board(PLAY_BOARD)
 
     if players_turn:
-        print(f'Ваш ход!')
+        print('Ваш ход! ')
         cell = player_choice(CELLS_AVAILABLE, PLAYER)
         place_marker(PLAY_BOARD, PLAYER, cell)
     else:

@@ -53,7 +53,7 @@ def player_choice(free, player_mark):
 
     while row+str(column) not in free:
         try:
-            position = input("Выберите свободную ячейку с A1 по J10: ").upper()
+            position = input('Выберите свободную ячейку с A1 по J10: ').upper()
             if len(position)!=2 and position[1:]!='10':
                 continue
             column = int(position[1:])
@@ -109,7 +109,7 @@ def loss_check(board, mark):
                 board[row][i] = board[rows[idx+1]][i] = board[rows[idx+2]][i] = board[rows[idx+3]][i] = board[rows[idx+4]][i] = 'Z'
                 loser = mark
             
-    return board, loser
+    return loser
 
 def switch():
     # Смена хода
@@ -119,12 +119,12 @@ def switch():
 def end(board, free, players_turn, player, rival):
     # Проверка на соблюдение условий окончания игры
 
-    board, game_lost = loss_check(board, player) if players_turn else loss_check(board, rival)
+    game_lost = loss_check(board, player) if players_turn else loss_check(board, rival)
     if (not game_lost) and not len(free):
         return ' Ничья! '
     elif game_lost:
         line = ' Победа! :) ' if game_lost == rival else ' Проигрыш... :( '
-        return lined
+        return line
     return False
 
 def start():
@@ -139,10 +139,10 @@ def start():
 def replay():
     # Предложение перезапустить игру
 
-    decision = ""
+    decision = ''
     while decision not in ('y', 'n', 'yes', 'no', 'д', 'н', 'да', 'нет'):
         decision = input(
-            "Вы хотите продолжить игру? (y/n)"
+            'Вы хотите продолжить игру? (y/n)'
         ).lower()
 
     return decision in ('y','yes', 'д', 'да')
@@ -158,13 +158,13 @@ while True:
     display_board(PLAY_BOARD)
 
     if players_turn:
-        print(f"Ваш ход!")
-        CELL = player_choice(CELLS_AVAILABLE, PLAYER)
-        place_marker(PLAY_BOARD, PLAYER, CELL)
+        print(f'Ваш ход!')
+        cell = player_choice(CELLS_AVAILABLE, PLAYER)
+        place_marker(PLAY_BOARD, PLAYER, cell)
     else:
-        print("Ход противника: ")
-        CELL = rival_choice(CELLS_AVAILABLE)
-        place_marker(PLAY_BOARD,RIVAL, CELL)
+        print('Ход противника: ')
+        cell = rival_choice(CELLS_AVAILABLE)
+        place_marker(PLAY_BOARD,RIVAL, cell)
     
     game_over = end(PLAY_BOARD, CELLS_AVAILABLE, players_turn, PLAYER, RIVAL)
 
@@ -177,4 +177,4 @@ while True:
     else:
         players_turn = switch()
     
-print("Игра окончена.")
+print('Игра окончена.')
